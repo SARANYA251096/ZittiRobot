@@ -11,12 +11,12 @@ function createZittiAssistant() {
     ) {
       roomLastCleaned = currentTimeObject;
       return `Room is cleaned. It looks tidy now. Job completed at ${currentTime}.`;
-    } else {
-      const minutesSinceCleaned = Math.floor(
-        (currentTimeObject - roomLastCleaned) / 1000 / 60
-      );
-      return `The room was just cleaned ${minutesSinceCleaned} minute(s) ago. I hope it's not dirty.`;
     }
+
+    const minutesSinceCleaned = Math.floor(
+      (currentTimeObject - roomLastCleaned) / 1000 / 60
+    );
+    return `The room was just cleaned ${minutesSinceCleaned} minute(s) ago. I hope it's not dirty.`;
   }
 
   function fetchNewspaper(currentTime) {
@@ -24,48 +24,52 @@ function createZittiAssistant() {
     if (lastNewspaperFetch === null || lastNewspaperFetch !== currentDate) {
       lastNewspaperFetch = currentDate;
       return "Here is your newspaper.";
-    } else {
-      return "I think you don't get another newspaper the same day.";
     }
+
+    return "I think you don't get another newspaper the same day.";
   }
 
   function addToShoppingList(instruction) {
     const item = instruction.split("Add ")[1].split(" to my shopping list")[0];
     if (shoppingList.includes(item)) {
       return `You already have ${item} in your shopping list.`;
-    } else {
-      shoppingList.push(item);
-      return `${item} added to your shopping list.`;
     }
+
+    shoppingList.push(item);
+    return `${item} added to your shopping list.`;
   }
 
   function readShoppingList() {
     if (shoppingList.length === 0) {
       return "You have no items in your shopping list.";
-    } else {
-      const items = shoppingList.join(", ");
-      return `Here is your shopping list. ${items}.`;
     }
+
+    const items = shoppingList.join(", ");
+    return `Here is your shopping list: ${items}.`;
   }
+
+  const instructionMap = {
+    Hey: () => "Hello, I am doing great.",
+    "How's the weather": () => "It's pleasant outside. You should take a walk.",
+    "Clean my room": () => cleanRoom(new Date().toLocaleTimeString()),
+    Add: (instruction) => addToShoppingList(instruction),
+    "Fetch the newspaper": () =>
+      fetchNewspaper(new Date().toLocaleTimeString()),
+    "Read my shopping list": () => readShoppingList(),
+    default: () => "Hmm.. I don't know that.",
+  };
 
   function processInstruction(instruction) {
     const currentTime = new Date().toLocaleTimeString();
 
-    if (instruction.startsWith("Hey")) {
-      return "Hello, I am doing great.";
-    } else if (instruction.startsWith("How's the weather")) {
-      return "It's pleasant outside. You should take a walk.";
-    } else if (instruction.startsWith("Clean my room")) {
-      return cleanRoom(currentTime);
-    } else if (instruction.startsWith("Add")) {
-      return addToShoppingList(instruction);
-    } else if (instruction.startsWith("Fetch the newspaper")) {
-      return fetchNewspaper(currentTime);
-    } else if (instruction.startsWith("Read my shopping list")) {
-      return readShoppingList();
-    } else {
-      return "Hmm.. I don't know that.";
-    }
+    const instructionKeys = Object.keys(instructionMap);
+    const matchedKey = instructionKeys.find((key) =>
+      instruction.startsWith(key)
+    );
+    const matchedFunction =
+      instructionMap[matchedKey] || instructionMap.default;
+
+    return matchedFunction(instruction);
   }
 
   return {
@@ -98,3 +102,4 @@ function main() {
 }
 
 main();
+
